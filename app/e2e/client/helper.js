@@ -101,17 +101,3 @@ export async function readFileAsArrayBuffer(file) {
 		reader.readAsArrayBuffer(file);
 	});
 }
-
-export class Deferred {
-	constructor() {
-		const p = new Promise((resolve, reject) => {
-			this.resolve = resolve;
-			this.reject = reject;
-		});
-
-		p.resolve = this.resolve;
-		p.reject = this.reject;
-
-		return p;
-	}
-}
