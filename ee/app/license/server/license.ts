@@ -363,6 +363,10 @@ export function onToggledFeature(feature: BundleFeature, {
 		}
 	});
 
+	if (enabled) {
+		up?.();
+	}
+
 	return (): void => {
 		offValidFeature();
 		offInvalidFeature();
