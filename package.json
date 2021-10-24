@@ -39,7 +39,8 @@
 		"set-version": "node .scripts/set-version.js",
 		"release": "meteor npm run set-version --silent",
 		"storybook": "cross-env NODE_OPTIONS=--max-old-space-size=8192 start-storybook -p 6006",
-		"build-storybook": "cross-env NODE_OPTIONS=--max-old-space-size=8192 build-storybook"
+		"storybook-ee": "cross-env NODE_OPTIONS=--max-old-space-size=8192 EE=true start-storybook -p 6006",
+		"build-storybook": "cross-env NODE_OPTIONS=--max-old-space-size=8192 EE=true build-storybook "
 	},
 	"license": "MIT",
 	"repository": {
@@ -60,10 +61,10 @@
 		"@rocket.chat/eslint-config": "^0.4.0",
 		"@rocket.chat/livechat": "^1.9.6",
 		"@settlin/spacebars-loader": "^1.0.9",
-		"@storybook/addon-essentials": "^6.3.9",
+		"@storybook/addon-essentials": "^6.3.12",
 		"@storybook/addon-postcss": "^2.0.0",
-		"@storybook/addons": "^6.3.9",
-		"@storybook/react": "^6.3.9",
+		"@storybook/addons": "^6.3.12",
+		"@storybook/react": "^6.3.12",
 		"@types/adm-zip": "^0.4.34",
 		"@types/agenda": "^2.0.9",
 		"@types/bad-words": "^3.0.1",
