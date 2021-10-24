@@ -1,9 +1,9 @@
 import moment from 'moment';
 
-import AnalyticsRaw from '../../../../../app/models/server/raw/Analytics';
-import { roomTypes } from '../../../../../app/utils';
-import { Messages } from '../../../../../app/models/server/raw';
-import { Analytics } from '../../../../../app/models/server';
+import AnalyticsRaw from '../../../../app/models/server/raw/Analytics';
+import { roomTypes } from '../../../../app/utils';
+import { Messages } from '../../../../app/models/server/raw';
+import { Analytics } from '../../../../app/models/server';
 import { convertDateToInt, diffBetweenDaysInclusive, convertIntToDate, getTotalOfWeekItems } from './date';
 
 export const handleMessagesSent = (message, room) => {
