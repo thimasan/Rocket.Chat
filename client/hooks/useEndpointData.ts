@@ -10,7 +10,7 @@ const defaultParams = {};
 
 export const useEndpointData = <P extends PathFor<'GET'>>(
 	endpoint: P,
-	params: Params<'GET', P>[0] = defaultParams as Params<'GET', P>[0],
+	params: Serialized<Params<'GET', P>[0]> = defaultParams as Serialized<Params<'GET', P>[0]>,
 	initialValue?: Serialized<Return<'GET', P>> | (() => Serialized<Return<'GET', P>>),
 ): AsyncState<Serialized<Return<'GET', P>>> & { reload: () => void } => {
 	const { resolve, reject, reset, ...state } = useAsyncState(initialValue);
