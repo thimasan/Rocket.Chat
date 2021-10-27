@@ -13,3 +13,5 @@ export const useAutoToggle = (initialValue = false, ms = 1000): boolean => {
 
 	return value;
 };
+
+export { useRestApiGet } from './useRestApiGet';
