@@ -1,8 +1,8 @@
-import { IDirectMessageRoom, IRoom } from '../../../../../../definition/IRoom';
-import { IDailyActiveUsers } from '../../../../../../definition/IUser';
+import { IDirectMessageRoom, IRoom } from '../../../../definition/IRoom';
+import { IDailyActiveUsers } from '../../../../definition/IUser';
 
 export type EngagementDashboardEndpoints = {
-	'engagement-dashboard/channels/list': {
+	'/v1/engagement-dashboard/channels/list': {
 		GET: (params: { start: Date; end: Date; offset: number; count: number }) => {
 			channels: {
 				room: {

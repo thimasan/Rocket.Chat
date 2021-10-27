@@ -2,16 +2,13 @@ import { action } from '@storybook/addon-actions';
 import React, { ContextType, FC } from 'react';
 
 import {
-	Method,
-	Params,
-	PathFor,
-	Return,
 	ServerContext,
 	ServerMethodName,
 	ServerMethodParameters,
 	ServerMethodReturn,
 } from '../../../client/contexts/ServerContext';
 import { Serialized } from '../../../definition/Serialized';
+import { Method, Params, Return, PathFor } from '../../../definition/rest';
 
 const logAction = action('ServerProvider');
 
