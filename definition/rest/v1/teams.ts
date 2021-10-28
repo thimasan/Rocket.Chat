@@ -9,6 +9,19 @@ export type TeamsEndpoints = {
 	'teams.info': {
 		GET: (params: { teamId: IRoom['teamId'] }) => { teamInfo: ITeam };
 	};
+	'teams.list': {
+		GET: (params: {
+			offset: number;
+			count: number;
+			sort: Record<string, unknown>;
+			query: Record<string, unknown>;
+		}) => {
+			teams: ITeam[];
+			total: number;
+			offset: number;
+			count: number;
+		};
+	};
 	'teams.listRooms': {
 		GET: (params: {
 			teamId: ITeam['_id'];
@@ -17,9 +30,9 @@ export type TeamsEndpoints = {
 			filter: string;
 			type: string;
 		}) => Omit<IRecordsWithTotal<IRoom>, 'records'> & {
-			count: number;
-			offset: number;
 			rooms: IRecordsWithTotal<IRoom>['records'];
+			offset: number;
+			count: number;
 		};
 	};
 	'teams.listRoomsOfUser': {
@@ -34,6 +47,14 @@ export type TeamsEndpoints = {
 			count: number;
 			offset: number;
 			rooms: IRecordsWithTotal<IRoom>['records'];
+		};
+	};
+	'teams.listAll': {
+		GET: (params: { offset: number; count: number }) => {
+			teams: ITeam[];
+			total: number;
+			offset: number;
+			count: number;
 		};
 	};
 	'teams.create': {
@@ -72,5 +93,40 @@ export type TeamsEndpoints = {
 		}) => {
 			team: ITeam;
 		};
+	};
+	'teams.convertToChannel': {
+		POST: (params: unknown) => unknown;
+	};
+	'teams.removeRoom': {
+		POST: (params: unknown) => unknown;
+	};
+	'teams.updateRoom': {
+		POST: (params: unknown) => unknown;
+	};
+	'teams.members': {
+		GET: (params: unknown) => unknown;
+	};
+	'teams.addMembers': {
+		POST: (params: unknown) => void;
+	};
+	'teams.updateMember': {
+		POST: (params: unknown) => void;
+	};
+	'teams.removeMember': {
+		POST: (params: unknown) => void;
+	};
+	'teams.leave': {
+		POST: (params: unknown) => void;
+	};
+	'teams.delete': {
+		POST: (params: unknown) => void;
+	};
+	'teams.autocomplete': {
+		GET: (params: { name: string }) => {
+			teams: ITeam[];
+		};
+	};
+	'teams.update': {
+		POST: (params: unknown) => void;
 	};
 };

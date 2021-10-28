@@ -1,3 +1,4 @@
+import { check, Match } from 'meteor/check';
 import { Meteor } from 'meteor/meteor';
 import { TAPi18n } from 'meteor/rocketchat:tap-i18n';
 
@@ -10,6 +11,10 @@ import { IOmnichannelRoom } from '../../../../../definition/IRoom';
 
 API.v1.addRoute('livechat/room.onHold', { authRequired: true }, {
 	post() {
+		check(this.bodyParams, {
+			roomId: Match.Maybe(String),
+		});
+
 		const { roomId } = this.bodyParams;
 		if (!roomId || roomId.trim() === '') {
 			return API.v1.failure('Invalid room Id');

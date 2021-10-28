@@ -1,10 +1,11 @@
-import { ILivechatDepartment } from '../../ILivechatDepartment';
-import { ILivechatMonitor } from '../../ILivechatMonitor';
-import { ILivechatTag } from '../../ILivechatTag';
-import { IOmnichannelCannedResponse } from '../../IOmnichannelCannedResponse';
-import { IOmnichannelRoom, IRoom } from '../../IRoom';
-import { ISetting } from '../../ISetting';
-import { IUser } from '../../IUser';
+import type { ILivechatBusinessHour } from '../../ILivechatBusinessHour';
+import type { ILivechatDepartment } from '../../ILivechatDepartment';
+import type { ILivechatMonitor } from '../../ILivechatMonitor';
+import type { ILivechatTag } from '../../ILivechatTag';
+import type { IOmnichannelCannedResponse } from '../../IOmnichannelCannedResponse';
+import type { IOmnichannelRoom, IRoom } from '../../IRoom';
+import type { ISetting } from '../../ISetting';
+import type { IUser } from '../../IUser';
 
 export type OmnichannelEndpoints = {
 	'livechat/appearance': {
@@ -49,7 +50,6 @@ export type OmnichannelEndpoints = {
 		};
 	};
 	'livechat/department/:_id': {
-		path: `livechat/department/${string}`;
 		GET: () => {
 			department: ILivechatDepartment;
 		};
@@ -111,6 +111,19 @@ export type OmnichannelEndpoints = {
 			total: number;
 		};
 	};
+	'/v1/livechat/business-hours.list': {
+		GET: (params: {
+			name?: string;
+			offset: number;
+			count: number;
+			sort: Record<string, unknown>;
+		}) => {
+			businessHours: ILivechatBusinessHour[];
+			count: number;
+			offset: number;
+			total: number;
+		};
+	};
 	'canned-responses': {
 		GET: (params: {
 			shortcut?: string;
@@ -138,7 +151,6 @@ export type OmnichannelEndpoints = {
 		DELETE: (params: { _id: IOmnichannelCannedResponse['_id'] }) => void;
 	};
 	'canned-responses/:_id': {
-		path: `canned-responses/${string}`;
 		GET: () => {
 			cannedResponse: IOmnichannelCannedResponse;
 		};

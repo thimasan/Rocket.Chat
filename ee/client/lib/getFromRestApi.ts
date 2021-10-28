@@ -5,7 +5,7 @@ import { Params, PathFor, Return } from '../../../definition/rest';
 export const getFromRestApi =
 	<P extends PathFor<'GET'>>(endpoint: P) =>
 	async (params: Serialized<Params<'GET', P>[0]>): Promise<Serialized<Return<'GET', P>>> => {
-		const response = await APIClient.get(endpoint, params);
+		const response = await APIClient.get(endpoint.replace(/^\//, ''), params);
 
 		if (typeof response === 'string') {
 			throw new Error('invalid response data type');

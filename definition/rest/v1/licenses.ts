@@ -4,6 +4,9 @@ export type LicensesEndpoints = {
 	'licenses.get': {
 		GET: () => { licenses: Array<ILicense> };
 	};
+	'licenses.add': {
+		POST: () => {};
+	};
 	'licenses.maxActiveUsers': {
 		GET: () => { maxActiveUsers: number | null; activeUsers: number };
 	};
