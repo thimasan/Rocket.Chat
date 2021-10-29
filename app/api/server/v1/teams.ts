@@ -10,6 +10,7 @@ import { hasAtLeastOnePermission, hasPermission } from '../../../authorization/s
 import { Users } from '../../../models/server';
 import { removeUserFromRoom } from '../../../lib/server/functions/removeUserFromRoom';
 import { IUser } from '../../../../definition/IUser';
+import { ITeam } from '../../../../definition/ITeam';
 
 API.v1.addRoute('teams.list', { authRequired: true }, {
 	get() {
@@ -51,9 +52,7 @@ API.v1.addRoute('teams.create', { authRequired: true }, {
 		if (!hasPermission(this.userId, 'create-team')) {
 			return API.v1.unauthorized();
 		}
-
-		// TODO: check these parameters
-		const { name, type, members, room, owner } = this.bodyParams as any;
+		const { name, type, members, room, owner } = this.bodyParams;
 
 		if (!name) {
 			return API.v1.failure('Body param "name" is required');
@@ -73,6 +72,18 @@ API.v1.addRoute('teams.create', { authRequired: true }, {
 	},
 });
 
+const getTeamByIdOrName = (teamId: string | null | undefined, teamName: string | null | undefined): ITeam | null => {
+	if (teamId) {
+		return Promise.await(Team.getOneById<ITeam>(teamId));
+	}
+
+	if (teamName) {
+		return Promise.await(Team.getOneByName(teamName));
+	}
+
+	return null;
+};
+
 API.v1.addRoute('teams.convertToChannel', { authRequired: true }, {
 	post() {
 		check(this.bodyParams, Match.ObjectIncluding({
@@ -80,15 +91,13 @@ API.v1.addRoute('teams.convertToChannel', { authRequired: true }, {
 			teamName: Match.Maybe(String),
 			roomsToRemove: Match.Maybe([String]),
 		}));
-
-		// TODO: check these parameters
-		const { roomsToRemove, teamId, teamName } = this.bodyParams as any;
+		const { roomsToRemove, teamId, teamName } = this.bodyParams;
 
 		if (!teamId && !teamName) {
 			return API.v1.failure('missing-teamId-or-teamName');
 		}
 
-		const team = teamId ? Promise.await(Team.getOneById(teamId)) : Promise.await(Team.getOneByName(teamName));
+		const team = getTeamByIdOrName(teamId, teamName);
 		if (!team) {
 			return API.v1.failure('team-does-not-exist');
 		}
@@ -117,14 +126,13 @@ API.v1.addRoute('teams.convertToChannel', { authRequired: true }, {
 
 API.v1.addRoute('teams.addRooms', { authRequired: true }, {
 	post() {
-		// TODO: check these parameters
-		const { rooms, teamId, teamName } = this.bodyParams as any;
+		const { rooms, teamId, teamName } = this.bodyParams;
 
 		if (!teamId && !teamName) {
 			return API.v1.failure('missing-teamId-or-teamName');
 		}
 
-		const team = teamId ? Promise.await(Team.getOneById(teamId)) : Promise.await(Team.getOneByName(teamName));
+		const team = getTeamByIdOrName(teamId, teamName);
 		if (!team) {
 			return API.v1.failure('team-does-not-exist');
 		}
@@ -141,10 +149,9 @@ API.v1.addRoute('teams.addRooms', { authRequired: true }, {
 
 API.v1.addRoute('teams.removeRoom', { authRequired: true }, {
 	post() {
-		// TODO: check these parameters
-		const { roomId, teamId, teamName } = this.bodyParams as any;
+		const { roomId, teamId, teamName } = this.bodyParams;
 
-		const team = teamId ? Promise.await(Team.getOneById(teamId)) : Promise.await(Team.getOneByName(teamName));
+		const team = getTeamByIdOrName(teamId, teamName);
 		if (!team) {
 			return API.v1.failure('team-does-not-exist');
 		}
@@ -163,10 +170,12 @@ API.v1.addRoute('teams.removeRoom', { authRequired: true }, {
 
 API.v1.addRoute('teams.updateRoom', { authRequired: true }, {
 	post() {
-		// TODO: check these parameters
-		const { roomId, isDefault } = this.bodyParams as any;
+		const { roomId, isDefault } = this.bodyParams;
 
 		const team = Promise.await(Team.getOneByRoomId(roomId));
+		if (!team) {
+			return API.v1.failure('team-does-not-exist');
+		}
 
 		if (!hasPermission(this.userId, 'edit-team-channel', team.roomId)) {
 			return API.v1.unauthorized();
@@ -184,7 +193,7 @@ API.v1.addRoute('teams.listRooms', { authRequired: true }, {
 		const { teamId, teamName, filter, type } = this.queryParams;
 		const { offset, count } = this.getPaginationItems();
 
-		const team = teamId ? Promise.await(Team.getOneById(teamId)) : Promise.await(Team.getOneByName(teamName));
+		const team = getTeamByIdOrName(teamId, teamName);
 		if (!team) {
 			return API.v1.failure('team-does-not-exist');
 		}
@@ -219,7 +228,7 @@ API.v1.addRoute('teams.listRoomsOfUser', { authRequired: true }, {
 		const { offset, count } = this.getPaginationItems();
 		const { teamId, teamName, userId, canUserDelete = false } = this.queryParams;
 
-		const team = teamId ? Promise.await(Team.getOneById(teamId)) : Promise.await(Team.getOneByName(teamName));
+		const team = getTeamByIdOrName(teamId, teamName);
 		if (!team) {
 			return API.v1.failure('team-does-not-exist');
 		}
@@ -230,7 +239,7 @@ API.v1.addRoute('teams.listRoomsOfUser', { authRequired: true }, {
 			return API.v1.unauthorized();
 		}
 
-		const { records, total } = Promise.await(Team.listRoomsOfUser(this.userId, team._id, userId, allowPrivateTeam, Boolean(canUserDelete), { offset, count }));
+		const { records, total } = Promise.await(Team.listRoomsOfUser(this.userId, team._id, userId, allowPrivateTeam, canUserDelete, { offset, count }));
 
 		return API.v1.success({
 			rooms: records,
@@ -258,7 +267,7 @@ API.v1.addRoute('teams.members', { authRequired: true }, {
 			return API.v1.failure('missing-teamId-or-teamName');
 		}
 
-		const team = (teamId && Promise.await(Team.getOneById(teamId))) || (teamName && Promise.await(Team.getOneByName(teamName))) || undefined;
+		const team = getTeamByIdOrName(teamId, teamName);
 		if (!team) {
 			return API.v1.failure('team-does-not-exist');
 		}
@@ -283,10 +292,18 @@ API.v1.addRoute('teams.members', { authRequired: true }, {
 
 API.v1.addRoute('teams.addMembers', { authRequired: true }, {
 	post() {
-		// TODO: check these parameters
-		const { teamId, teamName, members } = this.bodyParams as any;
+		check(this.bodyParams, Match.ObjectIncluding({
+			teamId: Match.Maybe(String),
+			teamName: Match.Maybe(String),
+			members: [Match.ObjectIncluding({
+				userId: String,
+				roles: Match.Maybe([String]),
+			})],
+		}));
 
-		const team = teamId ? Promise.await(Team.getOneById(teamId)) : Promise.await(Team.getOneByName(teamName));
+		const { teamId, teamName, members } = this.bodyParams;
+
+		const team = getTeamByIdOrName(teamId, teamName);
 		if (!team) {
 			return API.v1.failure('team-does-not-exist');
 		}
@@ -303,10 +320,18 @@ API.v1.addRoute('teams.addMembers', { authRequired: true }, {
 
 API.v1.addRoute('teams.updateMember', { authRequired: true }, {
 	post() {
-		// TODO: check these parameters
-		const { teamId, teamName, member } = this.bodyParams as any;
+		check(this.bodyParams, Match.ObjectIncluding({
+			teamId: Match.Maybe(String),
+			teamName: Match.Maybe(String),
+			member: Match.ObjectIncluding({
+				userId: String,
+				roles: Match.Maybe([String]),
+			}),
+		}));
 
-		const team = teamId ? Promise.await(Team.getOneById(teamId)) : Promise.await(Team.getOneByName(teamName));
+		const { teamId, teamName, member } = this.bodyParams;
+
+		const team = getTeamByIdOrName(teamId, teamName);
 		if (!team) {
 			return API.v1.failure('team-does-not-exist');
 		}
@@ -323,10 +348,16 @@ API.v1.addRoute('teams.updateMember', { authRequired: true }, {
 
 API.v1.addRoute('teams.removeMember', { authRequired: true }, {
 	post() {
-		// TODO: check these parameters
-		const { teamId, teamName, userId, rooms } = this.bodyParams as any;
+		check(this.bodyParams, Match.ObjectIncluding({
+			teamId: Match.Maybe(String),
+			teamName: Match.Maybe(String),
+			userId: String,
+			rooms: Match.Maybe([String]),
+		}));
 
-		const team = teamId ? Promise.await(Team.getOneById(teamId)) : Promise.await(Team.getOneByName(teamName));
+		const { teamId, teamName, userId, rooms } = this.bodyParams;
+
+		const team = getTeamByIdOrName(teamId, teamName);
 		if (!team) {
 			return API.v1.failure('team-does-not-exist');
 		}
@@ -359,10 +390,18 @@ API.v1.addRoute('teams.removeMember', { authRequired: true }, {
 
 API.v1.addRoute('teams.leave', { authRequired: true }, {
 	post() {
-		// TODO: check these parameters
-		const { teamId, teamName, rooms } = this.bodyParams as any;
+		check(this.bodyParams, Match.ObjectIncluding({
+			teamId: Match.Maybe(String),
+			teamName: Match.Maybe(String),
+			rooms: Match.Maybe([String]),
+		}));
 
-		const team = teamId ? Promise.await(Team.getOneById(teamId)) : Promise.await(Team.getOneByName(teamName));
+		const { teamId, teamName, rooms } = this.bodyParams;
+
+		const team = getTeamByIdOrName(teamId, teamName);
+		if (!team) {
+			return API.v1.failure('team-does-not-exist');
+		}
 
 		Promise.await(Team.removeMembers(this.userId, team._id, [{
 			userId: this.userId,
@@ -382,6 +421,11 @@ API.v1.addRoute('teams.leave', { authRequired: true }, {
 
 API.v1.addRoute('teams.info', { authRequired: true }, {
 	get() {
+		check(this.queryParams, Match.ObjectIncluding({
+			teamId: Match.Maybe(String),
+			teamName: Match.Maybe(String),
+		}));
+
 		const { teamId, teamName } = this.queryParams;
 
 		if (!teamId && !teamName) {
@@ -402,8 +446,13 @@ API.v1.addRoute('teams.info', { authRequired: true }, {
 
 API.v1.addRoute('teams.delete', { authRequired: true }, {
 	post() {
-		// TODO: check these parameters
-		const { teamId, teamName, roomsToRemove } = this.bodyParams as any;
+		check(this.bodyParams, Match.ObjectIncluding({
+			teamId: Match.Maybe(String),
+			teamName: Match.Maybe(String),
+			roomsToRemove: Match.Maybe([String]),
+		}));
+
+		const { teamId, teamName, roomsToRemove } = this.bodyParams;
 
 		if (!teamId && !teamName) {
 			return API.v1.failure('Provide either the "teamId" or "teamName"');
@@ -413,7 +462,7 @@ API.v1.addRoute('teams.delete', { authRequired: true }, {
 			return API.v1.failure('The list of rooms to remove is invalid.');
 		}
 
-		const team = teamId ? Promise.await(Team.getOneById(teamId)) : Promise.await(Team.getOneByName(teamName));
+		const team = getTeamByIdOrName(teamId, teamName);
 		if (!team) {
 			return API.v1.failure('Team not found.');
 		}
@@ -438,7 +487,7 @@ API.v1.addRoute('teams.delete', { authRequired: true }, {
 		Promise.await(Team.unsetTeamIdOfRooms(team._id));
 
 		// Delete all team memberships
-		Team.removeAllMembersFromTeam(teamId);
+		Team.removeAllMembersFromTeam(team._id);
 
 		// And finally delete the team itself
 		Promise.await(Team.deleteById(team._id));
@@ -459,18 +508,17 @@ API.v1.addRoute('teams.autocomplete', { authRequired: true }, {
 
 API.v1.addRoute('teams.update', { authRequired: true }, {
 	post() {
-		check(this.bodyParams, {
+		check(this.bodyParams, Match.ObjectIncluding({
 			teamId: String,
 			data: {
-				name: Match.Maybe(String),
-				type: Match.Maybe(Number),
+				name: String,
+				type: Number,
 			},
-		});
+		}));
 
-		// TODO: check these parameters
-		const { teamId, data } = this.bodyParams as any;
+		const { teamId, data } = this.bodyParams;
 
-		const team = teamId && Promise.await(Team.getOneById(teamId));
+		const team = teamId && Promise.await(Team.getOneById<ITeam>(teamId));
 		if (!team) {
 			return API.v1.failure('team-does-not-exist');
 		}
