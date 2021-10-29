@@ -5,20 +5,21 @@ import Sessions from '../../../../app/models/server/raw/Sessions';
 import { Users } from '../../../../app/models/server/raw';
 import { Analytics } from '../../../../app/models/server';
 import { convertDateToInt, diffBetweenDaysInclusive, getTotalOfWeekItems, convertIntToDate } from './date';
+import { IDailyActiveUsers, IUser } from '../../../../definition/IUser';
 
-export const handleUserCreated = (user) => {
+export const handleUserCreated = (user: IUser): IUser => {
 	if (user.roles?.includes('anonymous')) {
-		return;
+		return user;
 	}
 
 	Promise.await(AnalyticsRaw.saveUserData({
-		date: convertDateToInt(user.ts),
-		user,
+		date: convertDateToInt(user.createdAt),
 	}));
+
 	return user;
 };
 
-export const fillFirstDaysOfUsersIfNeeded = async (date) => {
+export const fillFirstDaysOfUsersIfNeeded = async (date: Date): Promise<void> => {
 	const usersFromAnalytics = await AnalyticsRaw.findByTypeBeforeDate({
 		type: 'users',
 		date: convertDateToInt(date),
@@ -36,7 +37,17 @@ export const fillFirstDaysOfUsersIfNeeded = async (date) => {
 	}
 };
 
-export const findWeeklyUsersRegisteredData = async ({ start, end }) => {
+export const findWeeklyUsersRegisteredData = async ({ start, end }: { start: Date; end: Date }): Promise<{
+	days: { day: Date; users: number }[];
+	period: {
+		count: number;
+		variation: number;
+	};
+	yesterday: {
+		count: number;
+		variation: number;
+	};
+}> => {
 	const daysBetweenDates = diffBetweenDaysInclusive(end, start);
 	const endOfLastWeek = moment(start).clone().subtract(1, 'days').toDate();
 	const startOfLastWeek = moment(endOfLastWeek).clone().subtract(daysBetweenDates, 'days').toDate();
@@ -69,7 +80,9 @@ export const findWeeklyUsersRegisteredData = async ({ start, end }) => {
 	};
 };
 
-export const findActiveUsersMonthlyData = async ({ start, end }) => {
+export const findActiveUsersMonthlyData = async ({ start, end }: { start: Date; end: Date }): Promise<{
+	month: IDailyActiveUsers[];
+}> => {
 	const startOfPeriod = moment(start);
 	const endOfPeriod = moment(end);
 
@@ -89,7 +102,12 @@ export const findActiveUsersMonthlyData = async ({ start, end }) => {
 	};
 };
 
-export const findBusiestsChatsInADayByHours = async ({ start }) => {
+export const findBusiestsChatsInADayByHours = async ({ start }: { start: Date }): Promise<{
+	hours: {
+		users: number;
+		hour: number;
+	}[];
+}> => {
 	const now = moment(start);
 	const yesterday = moment(now).clone().subtract(24, 'hours');
 	return {
@@ -101,7 +119,14 @@ export const findBusiestsChatsInADayByHours = async ({ start }) => {
 	};
 };
 
-export const findBusiestsChatsWithinAWeek = async ({ start }) => {
+export const findBusiestsChatsWithinAWeek = async ({ start }: { start: Date }): Promise<{
+	month: {
+		users: number;
+		day: number;
+		month: number;
+		year: number;
+	}[];
+}> => {
 	const today = moment(start);
 	const startOfCurrentWeek = moment(today).clone().subtract(7, 'days');
 
@@ -121,7 +146,15 @@ export const findBusiestsChatsWithinAWeek = async ({ start }) => {
 	};
 };
 
-export const findUserSessionsByHourWithinAWeek = async ({ start, end }) => {
+export const findUserSessionsByHourWithinAWeek = async ({ start, end }: { start: Date; end: Date }): Promise<{
+	week: {
+		users: number;
+		hour: number;
+		day: number;
+		month: number;
+		year: number;
+	}[];
+}> => {
 	const startOfPeriod = moment(start);
 	const endOfPeriod = moment(end);
 
