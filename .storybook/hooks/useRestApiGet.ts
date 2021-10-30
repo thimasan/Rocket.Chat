@@ -8,7 +8,7 @@ import { Params, PathFor, Return } from '../../definition/rest';
 export const useRestApiGet = <P extends PathFor<'GET'>>(
 	matchEndpoint: P,
 	fn: (params: Serialized<Params<'GET', P>[0]>) => Promise<Serialized<Return<'GET', P>>>,
-) => {
+): void => {
 	const fnRef = useRef(fn);
 	fnRef.current = fn;
 
@@ -31,7 +31,7 @@ export const useRestApiGet = <P extends PathFor<'GET'>>(
 			return get(endpoint, params);
 		};
 
-		return () => {
+		return (): void => {
 			APIClient.get = get;
 		};
 	}, [matchEndpoint]);

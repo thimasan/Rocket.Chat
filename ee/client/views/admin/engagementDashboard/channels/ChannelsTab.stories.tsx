@@ -3,7 +3,7 @@ import { Meta, Story } from '@storybook/react';
 import faker from 'faker';
 import React from 'react';
 
-import { useRestApiGet } from '../../../../../../.storybook/hooks';
+import { useRestApiGet } from '../../../../../../.storybook/hooks/useRestApiGet';
 import ChannelsTab from './ChannelsTab';
 
 export default {
