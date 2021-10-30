@@ -511,8 +511,8 @@ API.v1.addRoute('teams.update', { authRequired: true }, {
 		check(this.bodyParams, Match.ObjectIncluding({
 			teamId: String,
 			data: {
-				name: String,
-				type: Number,
+				name: Match.Maybe(String),
+				type: Match.Maybe(Number),
 			},
 		}));
 
@@ -527,7 +527,7 @@ API.v1.addRoute('teams.update', { authRequired: true }, {
 			return API.v1.unauthorized();
 		}
 
-		Promise.await(Team.update(this.userId, teamId, { name: data.name, type: data.type }));
+		Promise.await(Team.update(this.userId, teamId, { name: data.name ?? undefined, type: data.type ?? undefined }));
 
 		return API.v1.success();
 	},
