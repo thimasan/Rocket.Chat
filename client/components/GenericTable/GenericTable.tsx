@@ -8,7 +8,7 @@ import React, {
 	ReactNode,
 	ReactElement,
 	Key,
-	RefAttributes,
+	Ref,
 } from 'react';
 import flattenChildren from 'react-keyed-flatten-children';
 
@@ -37,14 +37,10 @@ type GenericTableProps<
 	pagination?: boolean;
 } & FilterProps;
 
-const GenericTable: {
-	<
-		FilterProps extends { onChange?: (params: GenericTableParams) => void },
-		ResultProps extends { _id?: Key },
-	>(
-		props: GenericTableProps<FilterProps, ResultProps> & RefAttributes<HTMLElement>,
-	): ReactElement | null;
-} = forwardRef(function GenericTable(
+const GenericTable = forwardRef(function GenericTable<
+	FilterProps extends { onChange?: (params: GenericTableParams) => void },
+	ResultProps extends { _id: Key },
+>(
 	{
 		children,
 		fixed = true,
@@ -57,8 +53,8 @@ const GenericTable: {
 		total,
 		pagination = true,
 		...props
-	},
-	ref,
+	}: GenericTableProps<FilterProps, ResultProps>,
+	ref: Ref<HTMLElement>,
 ) {
 	const t = useTranslation();
 
