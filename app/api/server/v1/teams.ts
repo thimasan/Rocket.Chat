@@ -1,6 +1,5 @@
 import { FilterQuery } from 'mongodb';
 import { Meteor } from 'meteor/meteor';
-import { Promise } from 'meteor/promise';
 import { Match, check } from 'meteor/check';
 import { escapeRegExp } from '@rocket.chat/string-helpers';
 
